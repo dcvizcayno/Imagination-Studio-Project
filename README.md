@@ -63,6 +63,12 @@ Measured on the reference deployment — Apple M5 (24 GB) + Runpod **NVIDIA H200
 
 > **Caveat:** the native Zig/TensorFold engine requires `nvcc` 12.9+; stock CUDA 12.8 images skip it and render on ComfyUI's blocks instead — slower, but fully functional. See [docs/04-troubleshooting.md](docs/04-troubleshooting.md).
 
+### Pinned source
+
+The exact Studio version these notes were tested against is preserved separately as an unmodified snapshot:
+
+**[Imagination-Studio-4.4.0](https://github.com/dcvizcayno/Imagination-Studio-4.4.0)** — v4.4.0, upstream commit `4c66927`, Apache-2.0, notices retained verbatim. It exists for reproducibility only and does not track upstream. Model weights and Python environments are deliberately excluded from it (non-redistributable and platform-specific respectively).
+
 ## Quick start
 
 ### 1. Validate your Mac
