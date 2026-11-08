@@ -1,0 +1,21 @@
+# Secrets — never commit these
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+studio_ed25519*
+*_ed25519
+.env
+.env.*
+secrets/
+*.log
+
+# Local state
+.DS_Store
+venv/
+.toolchain/
+__pycache__/
+*.pyc
+
+# Filled-in copies of the config (the template is config/gpu-switch.json)
+gpu-switch.local.json

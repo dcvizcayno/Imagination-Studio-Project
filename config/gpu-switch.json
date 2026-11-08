@@ -1,0 +1,93 @@
+{
+  "$comment": [
+    "GPU backend switch for Imagination Studio by keys+Wasserman.",
+    "Change 'mode' with ./studio-gpu.sh use local|runpod — it also writes the app's own placement record.",
+    "Replace every <PLACEHOLDER> before use. Never commit real pod IPs, keys or API tokens."
+  ],
+  "version": 1,
+
+  "mode": "local",
+  "priority": ["local", "runpod"],
+
+  "labels": {
+    "$comment": "Friendly names for the Sparks tab's 'Render on' dropdown. Written to $STUDIO_HOME/sparks/labels.json, which the app only ever reads (app/sparks.py:510).",
+    "head": "This Mac",
+    "runpod": "Runpod GPU"
+  },
+
+  "backends": {
+    "local": {
+      "kind": "local-install",
+      "label": "This Mac",
+      "port": 7870,
+      "url": "http://127.0.0.1:7870",
+      "$comment": "These are the installer's own gates (oneshot-setup.sh:261-280). Below 'min' it dies at preflight — not advisory.",
+      "requirements": {
+        "chip_family": "M5",
+        "macos_min": "26.0",
+        "unified_memory_gb": {
+          "min_pictures_only": 48,
+          "min_default": 96,
+          "min_turbo_or_ref2va": 128,
+          "former_floor_pre_4_3_1": 64
+        },
+        "disk_free_gb": {
+          "pictures_only": 40,
+          "default": 185,
+          "turbo": 530
+        }
+      }
+    },
+
+    "runpod": {
+      "kind": "remote-studio",
+      "label": "Runpod GPU pod",
+      "$comment": "pod_as_studio runs the whole Studio on the pod and you browse it over an ssh tunnel — the only shape that works when the Mac is below 48 GB. pod_as_worker keeps the Studio local and hands single video clips to the pod (app/sparks.py KINDS == ('video',)); it cannot rescue a host that cannot render pictures.",
+      "shape": "pod_as_studio",
+      "ssh": {
+        "host": "<POD_IP>",
+        "port": 22222,
+        "user": "root",
+        "identity_file": "~/.ssh/studio_ed25519"
+      },
+      "remote_dir": "/workspace/Imagination-Studio-by-keys-Wasserman",
+      "remote_port": 7870,
+      "local_port": 7870,
+      "worker_address": "http://127.0.0.1:7870",
+      "requirements": {
+        "$comment": "Measured in GPU memory. Floor is 90 GB for the video install without weight streaming (oneshot-setup-cuda.sh:201); 64 GB system RAM is unconditional (line 202).",
+        "vram_gb": {
+          "min_pictures_only": 48,
+          "min_video_no_streaming": 90,
+          "recommended": 128
+        },
+        "system_ram_gb": {
+          "min": 64,
+          "recommended": 128
+        },
+        "disk_free_gb": {
+          "pictures_only": 26,
+          "core_video": 108,
+          "all": 400
+        }
+      }
+    }
+  },
+
+  "placement": {
+    "$comment": "Written into $STUDIO_HOME/sparks/sparks.json. 'head' means this machine (app/sparks.py:566). 'prefer' falls back to the other backend; 'require' fails instead.",
+    "local": { "worker": "head", "policy": "prefer" },
+    "local_strict": { "worker": "head", "policy": "require" },
+    "runpod": { "worker": "http://127.0.0.1:7870", "policy": "prefer" },
+    "runpod_strict": { "worker": "http://127.0.0.1:7870", "policy": "require" },
+    "off": null
+  },
+
+  "studio": {
+    "$comment": "Where the app is installed and where it keeps projects, renders and its own config. STUDIO_HOME overrides at runtime.",
+    "install_dir": "<PATH_TO_STUDIO_CHECKOUT>",
+    "prefix": "<PATH_TO_PREFIX>",
+    "venv_python": "<PATH_TO_PREFIX>/venv/bin/python",
+    "studio_home": "~/ImaginationStudio"
+  }
+}
